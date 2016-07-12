@@ -6,7 +6,10 @@ import org.bson.types.ObjectId;
 import org.mongodb.morphia.Datastore;
 import org.mongodb.morphia.Morphia;
 import org.mongodb.morphia.dao.BasicDAO;
+import org.mongodb.morphia.mapping.Mapper;
 import org.mongodb.morphia.query.Query;
+import org.mongodb.morphia.query.UpdateOperations;
+import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -14,15 +17,15 @@ import java.util.concurrent.TimeUnit;
 /**
  * Created by thinhly on 7/6/16.
  */
+@Repository
 public class PersonDao extends BasicDAO<Person, ObjectId> {
 
-    // TODO: make singleton for DAO object
+    // TODO: make singleton for DAO object?
 
     public PersonDao(MongoClient mongo, Morphia morphia, String dbName) {
         super(mongo, morphia, dbName);
         Datastore ds = getDatastore();
-        ds.ensureIndexes(); //creates all defined with @Indexed
-        ds.ensureCaps(); //creates all collections for @Entity(cap=@CappedAt(...))
+        ds.ensureIndexes();
     }
 
     public Person findByEmail(String email){
@@ -32,5 +35,18 @@ public class PersonDao extends BasicDAO<Person, ObjectId> {
 
     public List<Person> listAllPerson(int offset, int pageSize){
         return createQuery().offset(offset).limit(pageSize).asList();
+    }
+
+    public void update(Person person) {
+        Datastore ds = getDatastore();
+        Query<Person> updateQuery = ds.createQuery(Person.class).field(Mapper.ID_KEY).equal(person.getId());
+        UpdateOperations<Person> ops;
+
+        ops = ds.createUpdateOperations(Person.class).set("firstName", person.getFirstName())
+                .set("middleName", person.getMiddleName())
+                .set("lastName", person.getLastName())
+                .set("password", person.getPassword())
+                .set("role", person.getRole());
+        ds.update(updateQuery, ops, true);
     }
 }

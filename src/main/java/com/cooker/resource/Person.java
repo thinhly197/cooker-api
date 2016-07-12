@@ -14,13 +14,20 @@ public class Person {
     @Property @ApiModelProperty( value = "Person's middle name", required = false ) private String middleName;
     @Property @ApiModelProperty( value = "Person's last name", required = true ) private String lastName;
 
-    @Indexed(value= IndexDirection.ASC, name="email_indx", background=false, unique=true,
+    public ObjectId getId() {
+        return id;
+    }
+
+    public void setId(ObjectId id) {
+        this.id = id;
+    }
+
+    @Indexed(value= IndexDirection.ASC, name="person_email_indx", background=true, unique=true,
             dropDups=true, sparse = false, expireAfterSeconds = -1)
     @Property @ApiModelProperty( value = "Person's e-mail address", required = true ) private String email;
 
     @Property @ApiModelProperty( value = "Person's password (MD5)", required = true ) private String password;
     @Property @ApiModelProperty( value = "Person's role, it can be User/Cooker", required = true ) private String role;
-    //@Embedded
 
 	public Person() {
 	}

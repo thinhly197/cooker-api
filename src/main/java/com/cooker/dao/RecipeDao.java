@@ -1,0 +1,56 @@
+package com.cooker.dao;
+
+import com.cooker.resource.FoodCategory;
+import com.cooker.resource.Recipe;
+import com.mongodb.MongoClient;
+import org.bson.types.ObjectId;
+import org.mongodb.morphia.Datastore;
+import org.mongodb.morphia.Morphia;
+import org.mongodb.morphia.dao.BasicDAO;
+import org.mongodb.morphia.mapping.Mapper;
+import org.mongodb.morphia.query.Query;
+import org.mongodb.morphia.query.UpdateOperations;
+import org.springframework.stereotype.Repository;
+
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+
+/**
+ * Created by thinhly on 7/12/16.
+ */
+@Repository
+public class RecipeDao extends BasicDAO<Recipe, ObjectId> {
+
+    public RecipeDao(MongoClient mongo, Morphia morphia, String dbName) {
+        super(mongo, morphia, dbName);
+        Datastore ds = getDatastore();
+        ds.ensureIndexes();
+    }
+
+    public Recipe findByIndex(int index) {
+        Query<Recipe> query = createQuery().filter("index", index).maxTime(2, TimeUnit.SECONDS);
+        return findOne(query);
+    }
+
+    public Recipe addByLanguage(int languageIndex, String categoryName) {
+        int count = (int) count() + 1;
+        //FoodCategory ct = new FoodCategory(count, categoryName, languageIndex);
+
+        Recipe recipe = new Recipe(count, )
+        save(ct);
+        return ct;
+    }
+
+    public void updateByLanguage(int languageIndex, String categoryName, int index) {
+        Recipe recipe = findByIndex(index);
+        List<String> values = ct.getName();
+        values.set(languageIndex, categoryName);
+        ct.setName(values);
+
+        Datastore ds = getDatastore();
+        Query<FoodCategory> updateQuery = ds.createQuery(FoodCategory.class).field(Mapper.ID_KEY).equal(ct.getId());
+        UpdateOperations<FoodCategory> ops;
+        ops = ds.createUpdateOperations(FoodCategory.class).set("name", ct.getName());
+        ds.update(updateQuery, ops, true);
+    }
+}

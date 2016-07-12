@@ -4,7 +4,10 @@ import java.util.Arrays;
 
 import javax.ws.rs.ext.RuntimeDelegate;
 
+import com.cooker.dao.FoodCategoryDao;
 import com.cooker.dao.PersonDao;
+import com.cooker.resource.FoodCategory;
+import com.cooker.rs.FoodCategoryRestService;
 import com.cooker.util.MongoDBConnector;
 import com.mongodb.MongoClient;
 import org.apache.cxf.bus.spring.SpringBus;
@@ -44,7 +47,11 @@ public class AppConfig {
 	public Server jaxRsServer() {
 		JAXRSServerFactoryBean factory = RuntimeDelegate.getInstance()
 				.createEndpoint( jaxRsApiApplication(), JAXRSServerFactoryBean.class );
-		factory.setServiceBeans( Arrays.< Object >asList( personRestService(), apiListingResourceJson() ) );
+		factory.setServiceBeans(
+				Arrays.< Object >asList(
+						personRestService(),
+						foodCategoriesRestService(),
+						apiListingResourceJson() ) );
 		factory.setAddress( factory.getAddress() );
 		factory.setProviders( Arrays.< Object >asList( jsonProvider(), resourceListingProvider(), apiDeclarationProvider() ) );
 		return factory.create();
@@ -99,6 +106,18 @@ public class AppConfig {
 		Morphia morphia = new Morphia();
 		morphia.map(Person.class);
 		return new PersonDao(mongo, morphia, DB_NAME);
+	}
+
+	@Bean
+	public FoodCategoryRestService foodCategoriesRestService() {
+		return new FoodCategoryRestService();
+	}
+
+	@Bean
+	public FoodCategoryDao foodCategoriesDao() {
+		Morphia morphia = new Morphia();
+		morphia.map(FoodCategory.class);
+		return new FoodCategoryDao(mongo, morphia, DB_NAME);
 	}
 		
 	@Bean

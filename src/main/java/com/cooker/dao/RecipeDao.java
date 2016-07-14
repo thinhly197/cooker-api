@@ -1,6 +1,8 @@
 package com.cooker.dao;
 
 import com.cooker.resource.FoodCategory;
+import com.cooker.resource.Ingredient;
+import com.cooker.resource.Preparation;
 import com.cooker.resource.Recipe;
 import com.mongodb.MongoClient;
 import org.bson.types.ObjectId;
@@ -30,27 +32,5 @@ public class RecipeDao extends BasicDAO<Recipe, ObjectId> {
     public Recipe findByIndex(int index) {
         Query<Recipe> query = createQuery().filter("index", index).maxTime(2, TimeUnit.SECONDS);
         return findOne(query);
-    }
-
-    public Recipe addByLanguage(int languageIndex, String categoryName) {
-        int count = (int) count() + 1;
-        //FoodCategory ct = new FoodCategory(count, categoryName, languageIndex);
-
-        Recipe recipe = new Recipe(count, )
-        save(ct);
-        return ct;
-    }
-
-    public void updateByLanguage(int languageIndex, String categoryName, int index) {
-        Recipe recipe = findByIndex(index);
-        List<String> values = ct.getName();
-        values.set(languageIndex, categoryName);
-        ct.setName(values);
-
-        Datastore ds = getDatastore();
-        Query<FoodCategory> updateQuery = ds.createQuery(FoodCategory.class).field(Mapper.ID_KEY).equal(ct.getId());
-        UpdateOperations<FoodCategory> ops;
-        ops = ds.createUpdateOperations(FoodCategory.class).set("name", ct.getName());
-        ds.update(updateQuery, ops, true);
     }
 }

@@ -22,7 +22,7 @@ public class Recipe {
     private ObjectId id;
 
     @Property @ApiModelProperty( value = "The index of the recipe", required = true )
-    private int index;
+    private long index;
 
     @Indexed(value= IndexDirection.ASC, name="recipe_author_indx", background=true, unique=true,
             dropDups=true, sparse = false, expireAfterSeconds = -1)
@@ -30,10 +30,12 @@ public class Recipe {
     private List<String> name = new ArrayList<>(Language.values().length);
 
     @Property @ApiModelProperty( value = "The Ingredient of the recipe", required = true )
-    private List<Ingredient> ingredientList;
+    //private List<Ingredient> ingredientList;
+    private List<String> ingredients = new ArrayList<>(Language.values().length);
 
     @Property @ApiModelProperty( value = "The Preparation of the recipe", required = true )
-    private List<Preparation> preparationList;
+    //private List<Preparation> preparationList;
+    private List<String> preparations = new ArrayList<>(Language.values().length);
 
     @Property @ApiModelProperty( value = "The category of the recipe", required = true )
     private List<Integer> categoryIndex;
@@ -44,33 +46,44 @@ public class Recipe {
     @Property @ApiModelProperty( value = "The number of the recipe's view", required = false )
     private long view;
 
-    public void addIngredient(Ingredient ingredient) {
-        ingredientList.add(ingredient);
-    }
+    //private List<String> comments;
 
-    public void addPreparation(Preparation preparation) {
-        preparationList.add(preparation);
-    }
 
     public Recipe() {}
 
-    public Recipe(int index, List<String> name, List<Ingredient> ingredientList,
-                  List<Preparation> preparationList, List<Integer> categoryIndex, String personEmail) {
+    public Recipe(long index, String recipeName, String ingredientList, String preparationList,
+                  List<Integer> categoryIndex, String personEmail, int languageIndex) {
         this.index = index;
-        this.name = name;
-        this.ingredientList = ingredientList;
-        this.preparationList = preparationList;
+        for(int i = 0; i < Language.values().length; i++){
+            if(i == languageIndex){
+                this.name.add(recipeName);
+                this.ingredients.add(ingredientList);
+                this.preparations.add(preparationList);
+            } else {
+                this.name.add("");
+                this.ingredients.add("");
+                this.preparations.add("");
+            }
+        }
         this.categoryIndex = categoryIndex;
         this.personEmail = personEmail;
         this.view = 0;
     }
 
-    public Recipe(int index, List<String> name, List<Ingredient> ingredientList,
-                  List<Preparation> preparationList, List<Integer> categoryIndex, String personEmail, long view) {
+    public Recipe(long index, String recipeName, String ingredientList, String preparationList,
+                  List<Integer> categoryIndex, String personEmail, long view, int languageIndex) {
         this.index = index;
-        this.name = name;
-        this.ingredientList = ingredientList;
-        this.preparationList = preparationList;
+        for(int i = 0; i < Language.values().length; i++){
+            if(i == languageIndex){
+                this.name.set(i, recipeName);
+                this.ingredients.set(i, ingredientList);
+                this.preparations.set(i, preparationList);
+            } else {
+                this.name.set(i, "");
+                this.ingredients.set(i, "");
+                this.preparations.set(i, "");
+            }
+        }
         this.categoryIndex = categoryIndex;
         this.personEmail = personEmail;
         this.view = view;
@@ -82,6 +95,14 @@ public class Recipe {
 
     public void setId(ObjectId id) {
         this.id = id;
+    }
+
+    public List<String> getName() {
+        return name;
+    }
+
+    public void setName(List<String> name) {
+        this.name = name;
     }
 
     public List<Integer> getCategoryIndex() {
@@ -108,27 +129,27 @@ public class Recipe {
         this.view = view;
     }
 
-    public int getIndex() {
+    public long getIndex() {
         return index;
     }
 
-    public void setIndex(int index) {
+    public void setIndex(long index) {
         this.index = index;
     }
 
-    public List<Ingredient> getIngredientList() {
-        return ingredientList;
+    public List<String> getIngredients() {
+        return ingredients;
     }
 
-    public void setIngredientList(List<Ingredient> ingredientList) {
-        this.ingredientList = ingredientList;
+    public void setIngredients(List<String> ingredients) {
+        this.ingredients = ingredients;
     }
 
-    public List<Preparation> getPreparationList() {
-        return preparationList;
+    public List<String> getPreparations() {
+        return preparations;
     }
 
-    public void setPreparationList(List<Preparation> preparationList) {
-        this.preparationList = preparationList;
+    public void setPreparations(List<String> preparations) {
+        this.preparations = preparations;
     }
 }

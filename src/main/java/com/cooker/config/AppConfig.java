@@ -6,8 +6,13 @@ import javax.ws.rs.ext.RuntimeDelegate;
 
 import com.cooker.dao.FoodCategoryDao;
 import com.cooker.dao.PersonDao;
+import com.cooker.dao.RecipeDao;
 import com.cooker.resource.FoodCategory;
+import com.cooker.resource.Recipe;
 import com.cooker.rs.FoodCategoryRestService;
+import com.cooker.rs.RecipeRestService;
+import com.cooker.util.CORSFilter;
+import com.cooker.services.RecipeService;
 import com.cooker.util.MongoDBConnector;
 import com.mongodb.MongoClient;
 import org.apache.cxf.bus.spring.SpringBus;
@@ -51,9 +56,15 @@ public class AppConfig {
 				Arrays.< Object >asList(
 						personRestService(),
 						foodCategoriesRestService(),
+						recipeRestService(),
 						apiListingResourceJson() ) );
 		factory.setAddress( factory.getAddress() );
-		factory.setProviders( Arrays.< Object >asList( jsonProvider(), resourceListingProvider(), apiDeclarationProvider() ) );
+		factory.setProviders(
+				Arrays.< Object >asList(
+						jsonProvider(),
+						corsFilter(),
+						resourceListingProvider(),
+						apiDeclarationProvider() ) );
 		return factory.create();
 	}
 	
@@ -64,6 +75,8 @@ public class AppConfig {
 		config.setVersion( "1.0.0" );
 		config.setScan( true );
 		config.setResourcePackage( Person.class.getPackage().getName() );
+		config.setResourcePackage( FoodCategory.class.getPackage().getName() );
+		config.setResourcePackage( Recipe.class.getPackage().getName() );
 		config.setBasePath( 
 			String.format( "http://%s:%s/%s%s",
 				environment.getProperty( SERVER_HOST ),
@@ -119,9 +132,31 @@ public class AppConfig {
 		morphia.map(FoodCategory.class);
 		return new FoodCategoryDao(mongo, morphia, DB_NAME);
 	}
+
+	@Bean
+	public RecipeRestService recipeRestService() {
+		return new RecipeRestService();
+	}
+
+	@Bean
+	public RecipeDao recipeDao() {
+		Morphia morphia = new Morphia();
+		morphia.map(Recipe.class);
+		return new RecipeDao(mongo, morphia, DB_NAME);
+	}
+
+	@Bean
+	public RecipeService recipeService() {
+		return new RecipeService();
+	}
 		
 	@Bean
 	public JacksonJsonProvider jsonProvider() {
 		return new JacksonJsonProvider();
+	}
+
+	@Bean
+	public CORSFilter corsFilter() {
+		return new CORSFilter();
 	}
 }

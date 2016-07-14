@@ -15,7 +15,9 @@ import java.util.List;
  * Created by thinhly on 7/6/16.
  */
 //specifying that the collection should be capped with a maximum of 20 documents and a size of 4096 bytes.
-@Entity(value="cappedCategories", cap=@CappedAt(count=20))//, value=4096))
+//http://davidsalter.com/2014/12/creating-a-mongodb-capped-collection-in-java.html
+//@Entity(value="cappedCategories", cap=@CappedAt(count=20))//, value=4096))
+@Entity
 @ApiModel( value = "FoodCategory", description = "Categories of food (include Text and Index)" )
 public class FoodCategory {
 

@@ -22,8 +22,8 @@ public class FoodCategoryDao extends BasicDAO<FoodCategory, ObjectId> {
 
     public FoodCategoryDao(MongoClient mongo, Morphia morphia, String dbName) {
         super(mongo, morphia, dbName);
-        Datastore ds = getDatastore();
-        ds.ensureCaps();
+//        Datastore ds = getDatastore();
+//        ds.ensureCaps();
     }
 
     public FoodCategory findByIndex(int index) {

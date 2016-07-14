@@ -52,11 +52,11 @@ public class FoodCategoryRestService {
     @ApiOperation( value = "Create new category", notes = "Language index is VIETNAM(0), ENGLISH(1), THAI(2), KOREAN(3), JAPAN(4), CHINA(5)" )
     @ApiResponses( {
             @ApiResponse( code = 201, message = "Category created successfully" ),
-            @ApiResponse( code = 409, message = "Category with such e-mail already exists" )
+            @ApiResponse( code = 409, message = "Something wrong..." )
     } )
     public Response addCategory(@Context final UriInfo uriInfo,
                                 @ApiParam( value = "Category Text", required = true ) @FormParam( "text" ) final String text,
-                                @ApiParam( value = "Language Index", required = true) @FormParam("lang") final int langIndex){
+                                @ApiParam( value = "Language Index", required = true) @PathParam("lang") final int langIndex){
         FoodCategory category = categoriesDao.addByLanguage(langIndex, text);
         return Response.created( uriInfo.getRequestUriBuilder().path( String.valueOf(category.getIndex()))
                 .build() ).build();
@@ -72,7 +72,7 @@ public class FoodCategoryRestService {
     public FoodCategory updateCategory(
             @ApiParam( value = "Index of category to lookup for", required = true ) @PathParam( "index" ) final int index,
             @ApiParam( value = "Category Text", required = true ) @FormParam( "text" ) final String text,
-            @ApiParam( value = "Language Index", required = true ) @FormParam( "language" ) final int langIndex) {
+            @ApiParam( value = "Language Index", required = true ) @PathParam( "language" ) final int langIndex) {
 
         final FoodCategory category = categoriesDao.findByIndex(index);
         Datastore ds = categoriesDao.getDatastore();

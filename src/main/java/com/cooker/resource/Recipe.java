@@ -46,8 +46,8 @@ public class Recipe {
     @Property @ApiModelProperty( value = "The number of the recipe's view", required = false )
     private long view;
 
-    //private List<String> comments;
-
+    //private List<String> comments; // TODO should uses facebook comments plugin
+    private Images images;
 
     public Recipe() {}
 
@@ -87,6 +87,14 @@ public class Recipe {
         this.categoryIndex = categoryIndex;
         this.personEmail = personEmail;
         this.view = view;
+    }
+
+    public Images getImages() {
+        return images;
+    }
+
+    public void setImages(Images images) {
+        this.images = images;
     }
 
     public ObjectId getId() {

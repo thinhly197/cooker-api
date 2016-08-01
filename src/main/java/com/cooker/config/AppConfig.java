@@ -4,9 +4,11 @@ import java.util.Arrays;
 
 import javax.ws.rs.ext.RuntimeDelegate;
 
+import com.cooker.dao.FavouriteDao;
 import com.cooker.dao.FoodCategoryDao;
 import com.cooker.dao.PersonDao;
 import com.cooker.dao.RecipeDao;
+import com.cooker.resource.Favourite;
 import com.cooker.resource.FoodCategory;
 import com.cooker.resource.Recipe;
 import com.cooker.rs.FoodCategoryRestService;
@@ -143,6 +145,13 @@ public class AppConfig {
 		Morphia morphia = new Morphia();
 		morphia.map(Recipe.class);
 		return new RecipeDao(mongo, morphia, DB_NAME);
+	}
+
+	@Bean
+	public FavouriteDao favouriteDao() {
+		Morphia morphia = new Morphia();
+		morphia.map(Favourite.class);
+		return new FavouriteDao(mongo, morphia, DB_NAME);
 	}
 
 	@Bean

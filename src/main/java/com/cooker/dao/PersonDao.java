@@ -38,15 +38,14 @@ public class PersonDao extends BasicDAO<Person, ObjectId> {
     }
 
     public void update(Person person) {
-        Datastore ds = getDatastore();
-        Query<Person> updateQuery = ds.createQuery(Person.class).field(Mapper.ID_KEY).equal(person.getId());
+        Query<Person> updateQuery = createQuery().field(Mapper.ID_KEY).equal(person.getId());
         UpdateOperations<Person> ops;
 
-        ops = ds.createUpdateOperations(Person.class).set("firstName", person.getFirstName())
+        ops = createUpdateOperations().set("firstName", person.getFirstName())
                 .set("middleName", person.getMiddleName())
                 .set("lastName", person.getLastName())
                 .set("password", person.getPassword())
                 .set("role", person.getRole());
-        ds.update(updateQuery, ops, true);
+        update(updateQuery, ops);
     }
 }

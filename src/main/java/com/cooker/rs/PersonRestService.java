@@ -1,34 +1,21 @@
 package com.cooker.rs;
 
-import java.util.Collection;
-
-import javax.inject.Inject;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.DefaultValue;
-import javax.ws.rs.FormParam;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
-
 import com.cooker.dao.PersonDao;
 import com.cooker.resource.Person;
-import com.wordnik.swagger.annotations.Api;
-import com.wordnik.swagger.annotations.ApiOperation;
-import com.wordnik.swagger.annotations.ApiParam;
-import com.wordnik.swagger.annotations.ApiResponse;
-import com.wordnik.swagger.annotations.ApiResponses;
+import com.cooker.util.MD5;
+import com.wordnik.swagger.annotations.*;
 import org.mongodb.morphia.Datastore;
 import org.mongodb.morphia.mapping.Mapper;
 import org.mongodb.morphia.query.Query;
 import org.mongodb.morphia.query.UpdateOperations;
+
+import javax.inject.Inject;
+import javax.ws.rs.*;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriInfo;
+import java.util.Collection;
 
 @Path( "/person" )
 @Api( value = "/person", description = "Manage person (include User and Master roles)" )
@@ -50,18 +37,18 @@ public class PersonRestService {
 	@GET
 	@ApiOperation( value = "Find person by e-mail", notes = "Find person by e-mail", response = Person.class )
 	@ApiResponses( {
-	    @ApiResponse( code = 404, message = "Person with such e-mail doesn't exists" )			 
+	    @ApiResponse( code = 204, message = "Person with such e-mail doesn't exists" )
 	} )
-	public Person getPerson( @ApiParam( value = "E-Mail address to lookup for", required = true )
-                                 @PathParam( "email" ) final String email ) {
-		return personDao.findByEmail( email );
+	public Person getPerson( @Context final UriInfo uriInfo,
+            @ApiParam( value = "E-Mail address to lookup for", required = true )
+            @PathParam( "email" ) final String email ) {
+        return personDao.findByEmail(email);
 	}
 
 	@Produces( { MediaType.APPLICATION_JSON  } )
 	@POST
 	@ApiOperation( value = "Create new person", notes = "Create new person" )
 	@ApiResponses( {
-	    @ApiResponse( code = 201, message = "Person created successfully" ),
 	    @ApiResponse( code = 409, message = "Person with such e-mail already exists" )
 	} )
 	public Response addPerson( @Context final UriInfo uriInfo,
@@ -73,22 +60,24 @@ public class PersonRestService {
             @ApiParam( value = "Role", required = true ) @FormParam( "role" ) final String role ) {
         Person p = personDao.findByEmail(email);
         if(p == null) {
-            p = new Person(firstName, middleName, lastName, email, password, role);
+            String md5Password = MD5.getMD5(password);
+            p = new Person(firstName, middleName, lastName, email, md5Password, role);
             personDao.save(p);
             return Response.created( uriInfo.getRequestUriBuilder().path( email ).build() ).build();
         } else {
-            return Response.status(Response.Status.NOT_FOUND).build();
+            return Response.status(Response.Status.CONFLICT).build();
         }
 	}
 	
 	@Produces( { MediaType.APPLICATION_JSON  } )
 	@Path( "/{email}" )
 	@PUT
-	@ApiOperation( value = "Update existing person", notes = "Update existing person", response = Person.class )
+	@ApiOperation( value = "Update user info", notes = "Include first, middle, last name and role",
+                    response = Person.class )
 	@ApiResponses( {
 	    @ApiResponse( code = 404, message = "Person with such e-mail doesn't exists" )			 
 	} )
-	public Person updatePerson(
+	public Response updatePerson(@Context final UriInfo uriInfo,
             @ApiParam( value = "E-Mail", required = true ) @PathParam( "email" ) final String email,
             @ApiParam( value = "Password", required = false ) @FormParam( "password" ) final String password,
             @ApiParam( value = "First Name", required = false ) @FormParam( "firstName" ) final String firstName,
@@ -98,7 +87,7 @@ public class PersonRestService {
 		
 		final Person person = personDao.findByEmail(email);
         if(person == null) {
-            return null;
+            return Response.status(Response.Status.NOT_FOUND).build();
         }
 
         Datastore ds = personDao.getDatastore();
@@ -131,8 +120,42 @@ public class PersonRestService {
             ds.update(updateQuery, ops);
         }
 
-		return person; 				
+        return Response.created(uriInfo.getRequestUriBuilder().path(person.getEmail()).build()).build();
 	}
+
+    @Produces( { MediaType.APPLICATION_JSON  } )
+    @Path( "/{email}/changePassword" )
+    @PUT
+    @ApiOperation( value = "Update user password",
+            notes = "Check old password and update new one. All of them are hashed values.",
+            response = Person.class )
+    @ApiResponses( {
+            @ApiResponse( code = 404, message = "Person with such e-mail doesn't exists" )
+    } )
+    public Response updatePersonPassword(@Context final UriInfo uriInfo,
+         @ApiParam( value = "E-Mail", required = true ) @PathParam( "email" ) final String email,
+         @ApiParam( value = "Old Password", required = false ) @FormParam( "oldPassword" ) final String oldPassword,
+         @ApiParam( value = "New Password", required = false ) @FormParam( "newPassword" ) final String newPassword) {
+        final Person person = personDao.findByEmail(email);
+        if(person == null) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+        if( newPassword.isEmpty() ) {
+            return Response.status(Response.Status.NO_CONTENT).build();
+        }
+        if(oldPassword.isEmpty() || !oldPassword.equals(person.getPassword())) {
+            return Response.status(Response.Status.NOT_ACCEPTABLE).build();
+        }
+
+        Datastore ds = personDao.getDatastore();
+        Query<Person> updateQuery = ds.createQuery(Person.class).field(Mapper.ID_KEY).equal(person.getId());
+        UpdateOperations<Person> ops;
+
+        person.setPassword( newPassword );
+        ops = ds.createUpdateOperations(Person.class).set("password", person.getPassword());
+        ds.update(updateQuery, ops);
+        return Response.created(uriInfo.getRequestUriBuilder().path(person.getEmail()).build()).build();
+    }
 	
 	@Path( "/{email}" )
 	@DELETE
@@ -142,6 +165,9 @@ public class PersonRestService {
 	} )
 	public Response deletePerson( @ApiParam( value = "E-Mail", required = true ) @PathParam( "email" ) final String email ) {
         final Person person = personDao.findByEmail(email);
+        if(person == null) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
         personDao.delete(person);
 		return Response.ok().build();
 	}

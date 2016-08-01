@@ -44,10 +44,9 @@ public class FoodCategoryDao extends BasicDAO<FoodCategory, ObjectId> {
         values.set(languageIndex, categoryName);
         ct.setName(values);
 
-        Datastore ds = getDatastore();
-        Query<FoodCategory> updateQuery = ds.createQuery(FoodCategory.class).field(Mapper.ID_KEY).equal(ct.getId());
+        Query<FoodCategory> updateQuery = createQuery().field(Mapper.ID_KEY).equal(ct.getId());
         UpdateOperations<FoodCategory> ops;
-        ops = ds.createUpdateOperations(FoodCategory.class).set("name", ct.getName());
-        ds.update(updateQuery, ops, true);
+        ops = createUpdateOperations().set("name", ct.getName());
+        update(updateQuery, ops);
     }
 }

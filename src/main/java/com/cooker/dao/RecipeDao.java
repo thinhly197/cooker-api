@@ -25,8 +25,7 @@ public class RecipeDao extends BasicDAO<Recipe, ObjectId> {
 
     public RecipeDao(MongoClient mongo, Morphia morphia, String dbName) {
         super(mongo, morphia, dbName);
-        Datastore ds = getDatastore();
-        ds.ensureIndexes();
+        ensureIndexes();
     }
 
     public Recipe findByIndex(int index) {
